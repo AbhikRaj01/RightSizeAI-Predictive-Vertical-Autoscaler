@@ -1,299 +1,230 @@
+# RightSize AI
 
-<div align="center">
+Predictive Kubernetes autoscaling with explainable recommendations, safety guardrails, and cost visibility.
 
-<!-- Animated Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=200&section=header&text=RightSize%20AI&fontSize=70&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Predictive%20Kubernetes%20Vertical%20Autoscaler&descAlignY=55&descSize=20" width="100%"/>
+RightSize AI forecasts CPU demand, recommends safer CPU limits, and can apply those recommendations through a guarded Kubernetes operator. The dashboard is built for demos: it shows live/simulated CPU, forecasted CPU, confidence, explanation, estimated savings, scaling history, and operator decisions in one place.
 
-<!-- Dynamic Badges -->
-<p align="center">
-  <a href="https://kubernetes.io/">
-    <img src="https://img.shields.io/badge/Kubernetes-326CE5?style=for-the-badge&logo=kubernetes&logoColor=white" alt="Kubernetes"/>
-  </a>
-  <a href="https://facebook.github.io/prophet/">
-    <img src="https://img.shields.io/badge/Prophet-FF6F00?style=for-the-badge&logo=meta&logoColor=white" alt="Prophet"/>
-  </a>
-  <a href="https://fastapi.tiangolo.com/">
-    <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
-  </a>
-  <a href="https://prometheus.io/">
-    <img src="https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white" alt="Prometheus"/>
-  </a>
-</p>
+## Why It Matters
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.11+"/>
-  <img src="https://img.shields.io/badge/Helm-0F1689?style=flat-square&logo=helm&logoColor=white" alt="Helm"/>
-  <img src="https://img.shields.io/badge/Minikube-326CE5?style=flat-square&logo=kubernetes&logoColor=white" alt="Minikube"/>
-  <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License"/>
-</p>
+Static CPU limits waste money. Reactive autoscalers wait until load has already changed. RightSize AI predicts demand before the spike, then applies guardrails before changing anything.
 
-<!-- Quick Stats Row -->
-<p align="center">
-  <img src="https://img.shields.io/badge/⚡_15%25_CPU_Reduction-success?style=for-the-badge&labelColor=black" alt="15% CPU Reduction"/>
-  <img src="https://img.shields.io/badge/🔄_Real--time_Predictions-blue?style=for-the-badge&labelColor=black" alt="Real-time"/>
-  <img src="https://img.shields.io/badge/🛡️_Zero--downtime_Updates-success?style=for-the-badge&labelColor=black" alt="Zero Downtime"/>
-</p>
+Core pitch:
 
-</div>
+- Predict demand before it happens.
+- Explain every recommendation.
+- Apply safe scaling with cooldowns, min/max CPU bounds, and change thresholds.
+- Translate saved CPU into estimated monthly savings.
 
----
-
-## 📋 Table of Contents
-
-- [Overview](#-overview)
-- [Architecture](#-architecture)
-- [Tech Stack](#-tech-stack)
-- [How It Works](#-how-it-works)
-- [Getting Started](#-getting-started)
-- [Results](#-results)
-- [Security](#-security)
-- [Contributing](#-contributing)
-
----
-
-## 🎯 Overview
-
-**RightSize AI** eliminates "Resource Guessing" in cloud environments. Instead of static resource limits, this system operates as a **Predictive Vertical Pod Autoscaler (VPA)** that:
-
-- 📊 Monitors live traffic patterns via Prometheus
-- 🔮 Forecasts future CPU demand using Meta's Prophet ML model  
-- ⚡ Physically resizes Kubernetes deployments in real-time
-- 🔄 Maintains a closed-loop feedback system for continuous optimization
-
-<div align="center">
+## Architecture
 
 ```mermaid
 graph LR
-    A[Prometheus Metrics] --> B[AI Brain<br/>Prophet Model]
-    B --> C[Predictions API]
-    C --> D[K8s Operator]
-    D --> E[Deployment Patch]
-    E --> A
+    A[Prometheus or Simulation] --> B[FastAPI ML Brain]
+    B --> C[Dashboard]
+    B --> D[Kopf Operator]
+    D --> E[Kubernetes Deployment]
+    D --> F[SQLite Audit Store]
+    B --> F
 ```
 
-</div>
+## Features
 
----
+- Prophet-based CPU forecasting
+- Cached model training with configurable TTL
+- Real confidence score from forecast uncertainty
+- Human-readable explanations
+- Multi-pod Prometheus aggregation
+- Simulation mode for reliable demos
+- One-page dashboard at `/dashboard`
+- Trigger CPU spike button
+- Enable/disable autoscaling controls
+- Apply recommendation button
+- SQLite persistence for predictions, scaling actions, deployment configs, and operator decisions
+- Kubernetes operator with cooldown, confidence gate, min/max CPU, and change threshold
+- Dockerfiles and Compose setup
 
-## 🏗️ Architecture
+## Quick Demo: Dashboard Only
 
-### System Design
+This is the fastest way to present the project. Docker and Minikube are not required.
 
-<div align="center">
-
-| Layer | Component | Technology | Purpose |
-|:-----:|:----------|:-----------|:--------|
-| **Data** | Metrics Pipeline | Prometheus + PromQL | Real-time time-series ingestion |
-| **AI/ML** | Prediction Engine | Prophet + FastAPI | Demand forecasting microservice |
-| **Control** | K8s Operator | Kopf Framework | Automated resource orchestration |
-| **Security** | RBAC Policies | Kubernetes Roles | Principle of least privilege |
-
-</div>
-
-### Core Components
-
-#### 1️⃣ Data Ingestion & Processing
-```python
-# Cold Start Failsafe
-if metrics.empty:
-    seasonal_pattern = generate_synthetic_seasonality()
-    df = preprocess_for_training(seasonal_pattern)
+```powershell
+cd C:\RightSize
+$env:RIGHTSIZE_SIMULATION_MODE="true"
+.\venv\Scripts\python.exe -m uvicorn ml_engine:app --reload --host 127.0.0.1 --port 8000
 ```
 
-- Pulls live time-series from Prometheus via PromQL
-- Python pipeline: clean → clip → format → DataFrame
-- **Cold Start Protection**: Auto-generates simulated seasonal patterns for new clusters
+Open:
 
-#### 2️⃣ ML Prediction Engine
-```python
-# FastAPI Endpoint
-@app.get("/predict")
-async def predict_resources(target_deployment: str):
-    forecast = prophet_model.predict(horizon='1h')
-    return {"recommendation": forecast.yhat_upper}
+```text
+http://127.0.0.1:8000/dashboard
 ```
 
-- **Model**: Meta Prophet for seasonality detection (daily/hourly patterns)
-- **API**: Async FastAPI microservice
-- **Endpoint**: `GET /predict?target_deployment=demo-app`
-- **Output**: `yhat_upper` (safe ceiling prediction with 95% confidence)
+Keep simulation mode checked. Use these buttons during the demo:
 
-#### 3️⃣ Kubernetes Operator
-The "Hands" of the system — 20-second control loop:
+1. Trigger CPU spike
+2. Refresh now
+3. Apply recommendation
+4. Enable autoscaling
 
-```yaml
-# Operator Workflow
-observe:  # Scan for annotated deployments
-  selector: rightsize.ai/enabled="true"
-analyze:   # Query AI Brain
-  api: http://ai-brain:8000/predict
-act:       # Execute rolling update
-  patch: |
-    spec:
-      template:
-        spec:
-          containers:
-          - resources:
-              limits:
-                cpu: "{{ prediction }}m"
+Also show the API docs:
+
+```text
+http://127.0.0.1:8000/docs
 ```
 
----
+## Full Kubernetes Demo
 
-## 🛠️ Tech Stack
+Start Docker Desktop first.
 
-<div align="center">
-
-<!-- Tech Stack Grid -->
-<table>
-<tr>
-<td align="center" width="25%">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/kubernetes/kubernetes-plain.svg" width="40" height="40" alt="Kubernetes"/>
-<br/>
-<strong>Orchestration</strong>
-<br/>
-<sub>Kubernetes + Minikube + Helm</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/prometheus/prometheus-original.svg" width="40" height="40" alt="Prometheus"/>
-<br/>
-<strong>Monitoring</strong>
-<br/>
-<sub>Prometheus + PromQL</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" width="40" height="40" alt="Python"/>
-<br/>
-<strong>AI/ML</strong>
-<br/>
-<sub>Prophet + Pandas + NumPy</sub>
-</td>
-<td align="center" width="25%">
-<img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/fastapi/fastapi-original.svg" width="40" height="40" alt="FastAPI"/>
-<br/>
-<strong>API Layer</strong>
-<br/>
-<sub>FastAPI + AsyncIO</sub>
-</td>
-</tr>
-</table>
-
-</div>
-
----
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [Docker Desktop](https://www.docker.com/products/docker-desktop)
-- [Minikube](https://minikube.sigs.k8s.io/docs/start/)
-- Python 3.11+
-- [Helm](https://helm.sh/docs/intro/install/)
-
-### Quick Start
-
-<details open>
-<summary><b>1. Start the Cluster</b></summary>
-
-```bash
-minikube start --driver=docker --cpus=4 --memory=8192
+```powershell
+cd C:\RightSize
+.\minikube.exe start --driver=docker
+.\minikube.exe update-context
+kubectl config use-context minikube
+kubectl get nodes
 ```
-</details>
 
-<details>
-<summary><b>2. Deploy Monitoring Stack</b></summary>
+Create or reset the demo deployment:
 
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm install kube-stack prometheus-community/kube-prometheus-stack
+```powershell
+kubectl get deployment demo-app
+kubectl create deployment demo-app --image=nginx
+kubectl set resources deployment demo-app --requests=cpu=500m --limits=cpu=1000m
 ```
-</details>
 
-<details>
-<summary><b>3. Launch AI Brain</b></summary>
+If `demo-app` already exists, ignore the create error and run the `kubectl set resources` command.
 
-```bash
-cd ml-service/
-pip install -r requirements.txt
-uvicorn ml_engine:app --reload --host 0.0.0.0 --port 8000
+Enable RightSize annotations:
+
+```powershell
+kubectl annotate deployment demo-app rightsize.ai/enabled="true" --overwrite
+kubectl annotate deployment demo-app rightsize.ai/mode="auto" --overwrite
+kubectl annotate deployment demo-app rightsize.ai/min-cpu="100m" --overwrite
+kubectl annotate deployment demo-app rightsize.ai/max-cpu="2000m" --overwrite
+kubectl annotate deployment demo-app rightsize.ai/cooldown-seconds="60" --overwrite
+kubectl annotate deployment demo-app rightsize.ai/change-threshold-percent="5" --overwrite
 ```
-</details>
 
-<details>
-<summary><b>4. Deploy Operator</b></summary>
+Terminal 1:
 
-```bash
-cd operator/
-kopf run k8s_operator.py --verbose --namespace=default
+```powershell
+cd C:\RightSize
+$env:RIGHTSIZE_SIMULATION_MODE="true"
+.\venv\Scripts\python.exe -m uvicorn ml_engine:app --reload --host 127.0.0.1 --port 8000
 ```
-</details>
 
-<details>
-<summary><b>5. Annotate Your App</b></summary>
+Terminal 2:
 
-```bash
-kubectl annotate deployment <your-app> rightsize.ai/enabled="true"
-kubectl annotate deployment <your-app> rightsize.ai/min-cpu="100m"
-kubectl annotate deployment <your-app> rightsize.ai/max-cpu="2000m"
+```powershell
+cd C:\RightSize
+$env:RIGHTSIZE_MIN_CONFIDENCE="0.50"
+.\venv\Scripts\python.exe -m kopf run k8s_operator.py --namespace default --verbose
 ```
-</details>
 
----
+Check CPU limit:
 
-## 📊 Results
+```powershell
+kubectl get deployment demo-app -o=jsonpath="{.spec.template.spec.containers[0].resources.limits.cpu}"
+```
 
-<div align="center">
+## Docker Compose
 
-| Metric | Before | After | Improvement |
-|:-------|:------:|:-----:|:-----------:|
-| **Idle CPU Allocation** | Baseline | **-15%** | ⬇️ Reduced waste |
-| **Response Time (P99)** | Stable | Stable | ✅ No degradation |
-| **Scaling Latency** | Manual | 20s | ⚡ Automated |
-| **Prediction Accuracy** | N/A | 94.5% | 🎯 Prophet model |
+Backend dashboard only:
 
-</div>
+```powershell
+docker compose up --build rightsize-backend
+```
 
-> **Key Achievement**: Demonstrated 15% reduction in idle CPU allocation during simulated low-traffic periods while maintaining stability during predicted spikes.
+Open:
 
----
+```text
+http://127.0.0.1:8000/dashboard
+```
 
-## 🔒 Security
+Operator profile:
 
-Built with **Defense in Depth**:
+```powershell
+docker compose --profile operator up --build
+```
 
-<div align="center">
+The operator profile mounts your local kubeconfig and expects the `minikube` context to work.
 
-| Layer | Implementation |
-|:------|:---------------|
-| **RBAC** | Custom Role with `patch` + `get` only on deployments. No secret access, no delete permissions. |
-| **Input Validation** | Strict Pydantic models with type hints on all API endpoints |
-| **Opt-in Model** | Zero infrastructure changes without explicit `rightsize.ai/enabled: "true"` annotation |
-| **Network Policies** | Operator restricted to internal cluster communication only |
+## API Endpoints
 
-</div>
+- `GET /dashboard`
+- `GET /predict`
+- `GET /metrics`
+- `GET /cost-estimate`
+- `GET /prediction-history`
+- `GET /scaling-history`
+- `GET /operator-decisions`
+- `GET /deployments`
+- `POST /simulate/spike`
+- `POST /autoscaling/enable`
+- `POST /autoscaling/disable`
+- `POST /apply-recommendation`
 
----
+## Demo Script
 
-## 🤝 Contributing
+Use this flow:
 
-Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md) first.
+1. Open the dashboard.
+2. Say: "RightSize AI predicts Kubernetes CPU demand before the spike happens."
+3. Point to current CPU, recommended CPU, confidence, and explanation.
+4. Click "Trigger CPU spike."
+5. Show the forecast and explanation update.
+6. Click "Apply recommendation."
+7. Show scaling history and operator decisions.
+8. Open `/docs` to prove the dashboard is backed by APIs.
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+If Kubernetes is running, also show the operator logs and the `kubectl get deployment` CPU limit.
 
----
+## Safety Guardrails
 
-<div align="center">
+The operator does not blindly apply ML output. It checks:
 
-<!-- Footer Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:667eea,100:764ba2&height=100&section=footer" width="100%"/>
+- Confidence threshold
+- Cooldown period
+- Minimum CPU
+- Maximum CPU
+- Change threshold
+- Recommendation mode vs auto mode
 
-**Built with 💜 and ☕ by [Your Name]**
+Every decision is written to SQLite, including skipped actions.
 
-[Report Bug](https://github.com/yourusername/rightsize-ai/issues) • [Request Feature](https://github.com/yourusername/rightsize-ai/issues) • [Documentation](https://docs.rightsize-ai.io)
+## Environment Variables
 
-</div>
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `RIGHTSIZE_SIMULATION_MODE` | `false` | Uses synthetic CPU data instead of Prometheus |
+| `RIGHTSIZE_MODEL_TTL_SECONDS` | `600` | Model cache duration |
+| `RIGHTSIZE_CPU_HOUR_COST_INR` | `3.5` | Cost estimate rate |
+| `PROMETHEUS_URL` | `http://localhost:9090` | Prometheus source |
+| `RIGHTSIZE_DB_FILE` | `rightsize.db` | SQLite database path |
+| `RIGHTSIZE_MIN_CONFIDENCE` | `0.80` | Operator confidence gate |
+| `RIGHTSIZE_COOLDOWN_SECONDS` | `300` | Default operator cooldown |
+
+## Stop Everything
+
+Stop FastAPI or Kopf with `Ctrl + C`.
+
+Stop Minikube:
+
+```powershell
+.\minikube.exe stop
+```
+
+Stop Docker Compose:
+
+```powershell
+docker compose down
+```
+
+## Roadmap
+
+- Memory and latency recommendations
+- Namespace-level cost reports
+- Helm chart
+- Backtesting accuracy report
+- In-cluster backend/operator deployment manifests
+- Authentication for dashboard actions

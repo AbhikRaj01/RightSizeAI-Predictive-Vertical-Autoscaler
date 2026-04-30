@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-labelledby="title desc">
+  <title id="title">RightSize AI mark</title>
+  <desc id="desc">A shield with a resource forecast line.</desc>
+  <rect width="160" height="160" rx="24" fill="#101010"/>
+  <path d="M80 18 128 36v38c0 31-18 55-48 70-30-15-48-39-48-70V36l48-18Z" fill="#171717" stroke="#20d3b0" stroke-width="6"/>
+  <path d="M43 99h18l17-33 20 46 17-29h18" fill="none" stroke="#f2c94c" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="43" cy="99" r="6" fill="#ff6b6b"/>
+  <circle cx="78" cy="66" r="6" fill="#20d3b0"/>
+  <circle cx="133" cy="83" r="6" fill="#f2c94c"/>
+</svg>

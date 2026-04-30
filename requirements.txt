@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pandas
+numpy
+prophet
+prometheus-api-client
+kubernetes
+kopf
+requests

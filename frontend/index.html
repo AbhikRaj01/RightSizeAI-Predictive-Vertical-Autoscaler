@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RightSize AI Dashboard</title>
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <img src="/static/assets/rightsize-mark.svg" alt="RightSize AI mark" class="brand-mark">
+          <div>
+            <p class="eyebrow">RightSize AI</p>
+            <h1>Predict demand. Apply guardrails. Prove savings.</h1>
+          </div>
+        </div>
+        <div class="run-state" id="backendState">Connecting</div>
+      </header>
+
+      <section class="controls" aria-label="Dashboard controls">
+        <label>
+          Deployment
+          <input id="deploymentInput" value="demo-app" autocomplete="off">
+        </label>
+        <label>
+          Allocated CPU
+          <input id="allocatedCpuInput" value="1000" inputmode="numeric">
+        </label>
+        <label>
+          INR per CPU hour
+          <input id="cpuCostInput" value="3.5" inputmode="decimal">
+        </label>
+        <label class="toggle">
+          <input id="simulateInput" type="checkbox" checked>
+          Simulation mode
+        </label>
+        <button id="refreshButton" type="button">Refresh now</button>
+      </section>
+
+      <section class="actions" aria-label="Autoscaling actions">
+        <button id="spikeButton" type="button">Trigger CPU spike</button>
+        <button id="enableButton" type="button">Enable autoscaling</button>
+        <button id="applyButton" type="button">Apply recommendation</button>
+        <button id="disableButton" type="button" class="secondary">Disable autoscaling</button>
+        <p id="actionMessage">Ready for demo.</p>
+      </section>
+
+      <section class="metrics-grid" aria-label="Key metrics">
+        <article class="metric">
+          <span>Current CPU</span>
+          <strong id="currentCpu">--</strong>
+          <small>latest observed demand</small>
+        </article>
+        <article class="metric">
+          <span>Recommended CPU</span>
+          <strong id="recommendedCpu">--</strong>
+          <small>safe upper forecast</small>
+        </article>
+        <article class="metric">
+          <span>Confidence</span>
+          <strong id="confidenceValue">--</strong>
+          <div class="meter" aria-hidden="true"><span id="confidenceBar"></span></div>
+        </article>
+        <article class="metric">
+          <span>Monthly Savings</span>
+          <strong id="monthlySavings">--</strong>
+          <small id="cpuSaved">CPU saved pending</small>
+        </article>
+        <article class="metric status">
+          <span>Status</span>
+          <strong id="statusValue">Idle</strong>
+          <small id="trendValue">trend pending</small>
+        </article>
+      </section>
+
+      <section class="main-grid">
+        <article class="panel chart-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">CPU demand</p>
+              <h2>Actual vs forecast</h2>
+            </div>
+            <div class="legend">
+              <span><i class="actual"></i>Actual</span>
+              <span><i class="forecast"></i>Forecast</span>
+            </div>
+          </div>
+          <canvas id="cpuChart" width="1100" height="420" aria-label="CPU usage chart"></canvas>
+        </article>
+
+        <aside class="panel explain-panel">
+          <p class="eyebrow">Decision reason</p>
+          <h2>Why this recommendation</h2>
+          <p id="explanationText">Waiting for a prediction.</p>
+          <dl class="details-list">
+            <div>
+              <dt>Model source</dt>
+              <dd id="modelSource">--</dd>
+            </div>
+            <div>
+              <dt>Cache</dt>
+              <dd id="cacheState">--</dd>
+            </div>
+            <div>
+              <dt>Last forecast</dt>
+              <dd id="forecastTime">--</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Guardrails</p>
+              <h2>Safe scaling policy</h2>
+            </div>
+          </div>
+          <ul class="guardrails">
+            <li>Confidence gate before action</li>
+            <li>Cooldown window after every resize</li>
+            <li>Minimum and maximum CPU bounds</li>
+            <li>Change threshold to prevent thrashing</li>
+          </ul>
+        </article>
+
+        <article class="panel history-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Audit trail</p>
+              <h2>Scaling history</h2>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Deployment</th>
+                  <th>Old CPU</th>
+                  <th>New CPU</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody">
+                <tr><td colspan="5">No scaling actions yet.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="panel decision-panel">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Safety log</p>
+            <h2>Operator decisions</h2>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Action</th>
+                <th>Deployment</th>
+                <th>CPU</th>
+                <th>Reason</th>
+              </tr>
+            </thead>
+            <tbody id="decisionBody">
+              <tr><td colspan="5">No decisions recorded yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

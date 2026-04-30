@@ -1,0 +1,67 @@
+This runbook provides the exact steps to initiate and terminate the **RightSize AI** demo.
+
+---
+
+## 🚀 Execution Steps
+
+### Part 1: Fast Dashboard Demo (No Kubernetes Required)
+1.  **Open VS Code:** Navigate to `C:\RightSize`.
+2.  **Open Terminal:** Go to `Terminal -> New Terminal`.
+3.  **Start Backend:**
+    ```powershell
+    cd C:\RightSize
+    $env:RIGHTSIZE_SIMULATION_MODE="true"
+    .\venv\Scripts\python.exe -m uvicorn ml_engine:app --reload --host 127.0.0.1 --port 8000
+    ```
+4.  **Access Dashboard:** Open [http://127.0.0.1:8000/dashboard](http://127.0.0.1:8000/dashboard) in your browser. (Ensure **Simulation mode** is checked).
+5.  **Access API Docs:** Open [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs).
+
+---
+
+### Part 2: Full Kubernetes Demo (Requires Docker & Minikube)
+1.  **Start Docker:** Open Docker Desktop and wait for it to run.
+2.  **Start Minikube:** In a new terminal, run:
+    ```powershell
+    cd C:\RightSize
+    .\minikube.exe start --driver=docker
+    .\minikube.exe update-context
+    kubectl config use-context minikube
+    ```
+3.  **Setup Demo App:**
+    ```powershell
+    kubectl create deployment demo-app --image=nginx
+    kubectl set resources deployment demo-app --requests=cpu=500m --limits=cpu=1000m
+    ```
+4.  **Enable RightSize AI Annotations:**
+    ```powershell
+    kubectl annotate deployment demo-app rightsize.ai/enabled="true" --overwrite
+    kubectl annotate deployment demo-app rightsize.ai/mode="auto" --overwrite
+    kubectl annotate deployment demo-app rightsize.ai/min-cpu="100m" --overwrite
+    kubectl annotate deployment demo-app rightsize.ai/max-cpu="2000m" --overwrite
+    kubectl annotate deployment demo-app rightsize.ai/cooldown-seconds="60" --overwrite
+    kubectl annotate deployment demo-app rightsize.ai/change-threshold-percent="5" --overwrite
+    ```
+5.  **Start Operator:** In a second terminal, run:
+    ```powershell
+    cd C:\RightSize
+    $env:RIGHTSIZE_MIN_CONFIDENCE="0.50"
+    .\venv\Scripts\python.exe -m kopf run k8s_operator.py --namespace default --verbose
+    ```
+6.  **Verify via CLI:**
+    ```powershell
+    kubectl get deployment demo-app -o=jsonpath="{.spec.template.spec.containers[0].resources.limits.cpu}"
+    ```
+
+---
+
+## 🛑 Shutdown Steps
+
+Follow these steps to safely close all processes:
+
+1.  **Stop Backend:** In Terminal 1, press `Ctrl + C`.
+2.  **Stop Operator:** In Terminal 2, press `Ctrl + C`.
+3.  **Stop Minikube:** ```powershell
+    cd C:\RightSize
+    .\minikube.exe stop
+    ```
+4.  **Close Docker:** Quit Docker Desktop from the system tray icon.

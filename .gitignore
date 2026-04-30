@@ -1,3 +1,7 @@
 minikube.exe
 venv/
 __pycache__/
+scaling_history.json
+rightsize.db
+rightsize.db-*
+uvicorn*.log

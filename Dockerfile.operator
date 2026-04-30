@@ -1,0 +1,15 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV RIGHTSIZE_DB_FILE=/data/rightsize.db
+ENV RIGHTSIZE_AI_BRAIN_URL=http://rightsize-backend:8000
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY k8s_operator.py scaling_history.py ./
+
+CMD ["kopf", "run", "k8s_operator.py", "--namespace", "default", "--verbose"]
